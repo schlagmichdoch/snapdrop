@@ -8,7 +8,7 @@ window.WeChat = /MicroMessenger|wxwork/.test(navigator.userAgent);
 
 // Browser compatibility alert. 
 if (window.WeChat){alert('WeChat Built-in browser doesn\'t support download, please tap ··· in the upper right corner and select Open in Browser.');}
-if (!window.isRtcSupported){alert('Current browser doesn\'t support this website\'s function, it\'s recommended to use Chrome, Edge, FireFox or Safari.');}
+if (!window.isRtcSupported){alert('Current browser doesn\'t support this website\'s function, it\'s recommended to use Chrome, Edge, Firefox or Safari.');}
 
 // set display name, room icon and tip text. 
 Events.on('display-name', e => {
@@ -412,11 +412,9 @@ class JoinRoomDialog extends Dialog {
             Events.fire('reconnect');
         }
         else {
-            let roomKey = ServerConnection._randomNum(6);
-            let roomId = crypto.randomUUID();
-            sessionStorage.setItem("roomKey", roomKey);
-            sessionStorage.setItem("roomId", roomId);
-            PersistentStorage.set("roomId", roomId).finally(() => {
+            sessionStorage.setItem("roomKey", 'request');
+            sessionStorage.setItem("roomId", 'request');
+            PersistentStorage.set("roomId", 'request').finally(() => {
                 Events.fire('reconnect');
                 this.hide();
                 this.$text.value = '';
@@ -445,7 +443,6 @@ class InviteUserToRoomDialog extends Dialog {
         Events.on('key-room-deleted', () => this._onKeyRoomDeleted());
         Events.on('key-room-room-id-received', () => this._deleteKeyRoom());
         Events.on('key-room-room-id', e => this._onRoomId(e));
-        Events.on('key-room-full', () => this._onKeyRoomFull());
     }
 
     _initDom() {
@@ -511,8 +508,7 @@ class InviteUserToRoomDialog extends Dialog {
 
     _inviteUserToRoom() {
         if (!sessionStorage.getItem("roomKey")) {
-            let roomKey = ServerConnection._randomNum(6);
-            sessionStorage.setItem("roomKey", roomKey);
+            sessionStorage.setItem("roomKey", 'request');
         }
         Events.fire('reconnect');
     }
@@ -537,12 +533,6 @@ class InviteUserToRoomDialog extends Dialog {
             Events.fire('reconnect');
             Events.fire('notify-user', `Joined room successfully.`);
         }).catch(e => console.log(e));
-    }
-
-    _onKeyRoomFull() {
-        let roomKey = ServerConnection._randomNum(6);
-        sessionStorage.setItem("roomKey", roomKey);
-        Events.fire('reconnect');
     }
 }
 

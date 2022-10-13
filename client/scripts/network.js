@@ -49,13 +49,10 @@ class ServerConnection {
                 this.send({ type: 'pong' });
                 break;
             case 'display-name':
-                Events.fire('display-name', msg);
+                this._onDisplayName(msg);
                 break;
             case 'key-room-created':
                 Events.fire('key-room-created', msg);
-                break;
-            case 'key-room-full':
-                Events.fire('key-room-full', msg);
                 break;
             case 'key-room-room-id':
                 Events.fire('key-room-room-id', msg);
@@ -130,6 +127,24 @@ class ServerConnection {
 
     _roomKey() {
         return sessionStorage.getItem("roomKey");
+    }
+
+    _onDisplayName(msg) {
+        let roomId = msg.message.roomId;
+        let roomKey = msg.message.roomKey;
+        let roomIsIp = msg.message.roomIsIp;
+
+        if (roomKey && !roomIsIp) {
+            sessionStorage.setItem("roomKey", roomKey);
+        }
+        if (roomId && !roomIsIp) {
+            sessionStorage.setItem("roomId", roomId);
+            PersistentStorage.set("roomId", roomId).finally(() => {
+                Events.fire('display-name', msg);
+            }).catch(e => console.log(e));
+        } else {
+            Events.fire('display-name', msg);
+        }
     }
 
     _endpoint() {

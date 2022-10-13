@@ -1,4 +1,6 @@
 var process = require('process')
+var crypto = require('crypto')
+
 // Handle SIGINT
 process.on('SIGINT', () => {
   console.info("SIGINT Received, exiting...")
@@ -16,12 +18,11 @@ const parser = require('ua-parser-js');
 class SnapdropServer {
 
     constructor(port) {
-        const WebSocket = require('ws');
-        this._wss = new WebSocket.Server({ port: port });
-        this._wss.on('connection', (socket, request) => this._onConnection(new Peer(socket, request)));
-
         this._rooms = {};
         this._keyRooms = {};
+        const WebSocket = require('ws');
+        this._wss = new WebSocket.Server({ port: port });
+        this._wss.on('connection', (socket, request) => this._onConnection(new Peer(socket, request, this._getKeyRoomsOccupied())));
 
         console.log('Snapdrop is running on port', port);
     }
@@ -130,14 +131,6 @@ class SnapdropServer {
     _joinKeyRoom(peer) {
         if (!peer.roomIsIp) {
             //goal: create keyRoom
-            if (this._keyRooms[peer.roomKey]) {
-                // peer tries to create new keyRoom that already exists
-                this._send(peer, {
-                    type: 'key-room-full',
-                    roomKey: peer.roomKey
-                });
-                return;
-            }
             this._keyRooms[peer.roomKey] = {};
             this._send(peer, {
                 type: 'key-room-created',
@@ -199,6 +192,10 @@ class SnapdropServer {
         delete this._keyRooms[roomKey];
     }
 
+    _getKeyRoomsOccupied() {
+        return Reflect.ownKeys(this._keyRooms)
+    }
+
     _send(peer, message) {
         if (!peer) return;
         if (this._wss.readyState !== this._wss.OPEN) return;
@@ -231,12 +228,12 @@ class SnapdropServer {
 
 class Peer {
 
-    constructor(socket, request) {
+    constructor(socket, request, keyRoomsOccupied) {
         // set socket
         this.socket = socket;
 
         // set peer id, code, room
-        this._setPeerValues(request);
+        this._setPeerValues(request, keyRoomsOccupied);
 
         // is WebRTC supported ?
         this.rtcSupported = request.url.indexOf('webrtc') > -1;
@@ -247,21 +244,31 @@ class Peer {
         this.lastBeat = Date.now();
     }
 
-    _setPeerValues(request) {
+    _setPeerValues(request, keyRoomsOccupied) {
         let params = (new URL(request.url, "http://server")).searchParams;
         this.id = params.get("peerid");
         this.code = params.get("code");
-        let incomeRoomId = params.get("roomid")
 
+        let incomeRoomId = params.get("roomid")
         if (incomeRoomId === "null") {
             this.roomId = this._getIP(request)
             this.roomIsIp = true;
+        } else if (incomeRoomId === 'request') {
+            this.roomId = crypto.randomUUID();
+            this.roomIsIp = false;
         } else {
             this.roomId = incomeRoomId;
             this.roomIsIp = false;
         }
-        let roomKey = params.get("roomkey").replace(/\D/g,'');
-        if (roomKey.length === 6 && !isNaN(roomKey)) this.roomKey = roomKey;
+
+        let roomKey = params.get("roomkey");
+        if (roomKey === 'request') {
+            while (this.roomKey === undefined || keyRoomsOccupied.includes(this.roomKey)) {
+                // get randomInt until keyRoom not occupied
+                this.roomKey = crypto.randomInt(1000000, 1999999).toString().substring(1); // include numbers with leading 0s
+            }
+        } else if (roomKey.length === 6 && !isNaN(roomKey))
+            this.roomKey = roomKey;
     }
 
     _getIP(request) {
