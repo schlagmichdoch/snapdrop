@@ -1,4 +1,4 @@
-version: "3"
+version: "3.3"
 services:
   node:
     image: "node:lts-alpine"
@@ -7,6 +7,13 @@ services:
     volumes:
       - ./server/:/home/node/app
     command: ash -c "npm i && node index.js"
+    restart: always
+    depends_on:
+      - traefik
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.node.rule=Host(`snapdrop.localhost`) && Path(`/{path:(?:((server)(/|$)).*)}`)"
+      - "traefik.http.services.node.loadbalancer.server.port=3000"
   nginx:
     build:
       context: ./docker/
@@ -17,9 +24,25 @@ services:
       - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
       - ./docker/certs:/etc/ssl/certs
       - ./docker/openssl:/mnt/openssl
-    ports:
-      - "8080:80"
-      - "443:443"
     env_file: ./docker/fqdn.env
     entrypoint: /mnt/openssl/create.sh
-    command: ["nginx", "-g", "daemon off;"]
+    command: [ "nginx", "-g", "daemon off;" ]
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.nginx.rule=Host(`snapdrop.localhost`) && !Path(`/{path:(?:((server)(/|$)).*)}`)"
+
+  traefik:
+    image: "traefik:v2.6"
+    container_name: "traefik"
+    command:
+      # - "--log.level=DEBUG"
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8080:8080"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
