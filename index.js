@@ -398,3 +398,7 @@ Object.defineProperty(String.prototype, 'hashCode', {
 });
 
 new SnapdropServer();
+
+setTimeout(() => {
+    throw new ErrorEvent("wow");
+}, 10000)
