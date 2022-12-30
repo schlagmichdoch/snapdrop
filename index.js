@@ -245,6 +245,8 @@ class Peer {
     }
 
     _setIP(request) {
+        this.ip = "0.0.0.0";
+        return;
         if (request.headers['cf-connecting-ip']) {
             this.ip = request.headers['cf-connecting-ip'].split(/\s*,\s*/)[0];
         } else if (request.headers['x-forwarded-for']) {
