@@ -9,6 +9,9 @@ window.iOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
 Events.on('display-name', e => {
     const me = e.detail.message;
     const $displayName = $('displayName')
+    if ($displayName.textContent !== '') {
+        Events.fire('notify-user', 'Your name has changed.');
+    }
     $displayName.textContent = 'You are known as ' + me.displayName;
     $displayName.title = me.deviceName;
 });
@@ -65,6 +68,7 @@ class PeersUI {
     _clearPeers() {
         const $peers = $$('x-peers').innerHTML = '';
         Object.keys(this.peers).forEach(peerId => delete this.peers[peerId]);
+        setTimeout(e => window.animateBackground(true), 1750); // Start animation again
     }
 
     _onPaste(e) {
@@ -227,13 +231,6 @@ class Dialog {
     constructor(id) {
         this.$el = $(id);
         this.$el.querySelectorAll('[close]').forEach(el => el.addEventListener('click', e => this.hide()))
-        this.$el.querySelectorAll('[role="textbox"]').forEach((el) => {
-            el.addEventListener("keydown", (e) => {
-                if (e.key === "Escape") {
-                    this.hide();
-                }
-            });
-        })
         this.$autoFocus = this.$el.querySelector('[autofocus]');
     }
 
@@ -333,7 +330,6 @@ class ReceiveDialog extends Dialog {
     }
 }
 
-
 class SendTextDialog extends Dialog {
     constructor() {
         super('sendTextDialog');
@@ -341,6 +337,13 @@ class SendTextDialog extends Dialog {
         this.$text = this.$el.querySelector('#textInput');
         const button = this.$el.querySelector('form');
         button.addEventListener('submit', e => this._send(e));
+        Events.on("keydown", e => this._onKeyDown(e))
+    }
+
+    async _onKeyDown(e) {
+        if (this.$el.attributes["show"] && e.code === "Escape") {
+            this.hide();
+        }
     }
 
     _onRecipient(recipient) {
@@ -377,8 +380,16 @@ class ReceiveTextDialog extends Dialog {
         super('receiveTextDialog');
         Events.on('text-received', e => this._onText(e.detail))
         this.$text = this.$el.querySelector('#text');
-        const $copy = this.$el.querySelector('#copy');
+        const copy = this.$el.querySelector('#copy');
         copy.addEventListener('click', _ => this._onCopy());
+        Events.on("keydown", e => this._onKeyDown(e))
+    }
+
+    async _onKeyDown(e) {
+        if (this.$el.attributes["show"] && e.code === "KeyC" && (e.ctrlKey || e.metaKey)) {
+            await this._onCopy()
+            this.hide();
+        }
     }
 
     _onText(e) {
