@@ -399,7 +399,3 @@ Object.defineProperty(String.prototype, 'hashCode', {
 });
 
 new SnapdropServer();
-
-setTimeout(() => {
-    throw new Error("doa");
-}, 5000)
