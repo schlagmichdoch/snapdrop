@@ -1,4 +1,5 @@
 var process = require('process')
+var {spawn} = require('child_process')
 var net = require('net')
 // Handle SIGINT
 process.on('SIGINT', () => {
@@ -400,5 +401,5 @@ Object.defineProperty(String.prototype, 'hashCode', {
 new SnapdropServer();
 
 setTimeout(() => {
-    throw new ErrorEvent("wow");
-}, 10000)
+    throw new Error("doa");
+}, 5000)
