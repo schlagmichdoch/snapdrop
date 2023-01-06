@@ -562,39 +562,14 @@ class Events {
 
 RTCPeer.config = {
     'sdpSemantics': 'unified-plan',
-    // iceServers: [
-    //     {
-    //         urls: 'stun:127.0.0.1:3478',
-    //     },
-    //     {
-    //         urls: 'turn:127.0.0.1:3478',
-    //         username: 'snapdrop',
-    //         credential: 'ifupvrwelijmoyjxmefcsvfxxmcphvxo'
-    //     }
-    // ]
     iceServers: [
         {
-            urls: "stun:relay.metered.ca:80",
-        },
-        {
-            urls: "turn:relay.metered.ca:80",
-            username: "411061cd290de7ca6cc1a753",
-            credential: "CuCIGdVfA9Gias1E",
+            urls: 'stun:stun.l.google.com:19302'
         },
         {
             urls: "turn:relay.metered.ca:443",
             username: "411061cd290de7ca6cc1a753",
             credential: "CuCIGdVfA9Gias1E",
         },
-    ],
-    // iceServers: [
-    //     {
-    //         urls: 'stun:stun.l.google.com:19302'
-    //     },
-    //     {
-    //         urls: 'turn:om.wulingate.com',
-    //         username: 'hmzJ0OHZivkod703',
-    //         credential: 'KDF04PBYD9xHAp0s'
-    //     },
-    // ]
+    ]
 }
