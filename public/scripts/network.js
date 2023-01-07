@@ -563,9 +563,9 @@ class Events {
 RTCPeer.config = {
     'sdpSemantics': 'unified-plan',
     iceServers: [
-        {
-            urls: 'stun:stun.l.google.com:19302'
-        },
+        // {
+        //     urls: 'stun:stun.l.google.com:19302'
+        // },
         {
             urls: "turn:relay.metered.ca:443",
             username: "411061cd290de7ca6cc1a753",
