@@ -576,9 +576,9 @@ RTCPeer.config = {
         //     urls: 'stun:stun.l.google.com:19302'
         // },
         {
-            urls: "turn:relay.metered.ca:443",
-            username: "411061cd290de7ca6cc1a753",
-            credential: "CuCIGdVfA9Gias1E",
+            urls: "turn:openrelay.metered.ca:443",
+            username: "openrelayproject",
+            credential: "openrelayproject",
         },
     ]
 }
