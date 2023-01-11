@@ -189,7 +189,7 @@ class Peer {
         }
         // IPv4 and IPv6 use different values to refer to localhost
         // put all peers that are on the same network as the server into the same room as well
-        if (this.ip === '::1' || this.ip === '::ffff:127.0.0.1' || this.ip === '::1' || this.ipIsPrivate(this.ip)) {
+        if (this.ip === '::1' || this.ip === '::ffff:127.0.0.1' || this.ipIsPrivate(this.ip)) {
             this.ip = '127.0.0.1';
         }
     }
